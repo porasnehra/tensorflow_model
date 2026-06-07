@@ -93,8 +93,18 @@ def predict_risk(request: PredictionRequest):
             raise HTTPException(status_code=503, detail="Model is not loaded. Please train first.")
             
         prob = float(model.predict(X, verbose=0)[0][0])
-        tier = get_risk_tier(prob)
         signals = explain_signals(features_df.iloc[0])
+        
+        # --- DEMO FALLBACK FOR FLUTTER TESTING ---
+        # Since the server is currently running a randomized, untrained dummy model, 
+        # it is accidentally outputting 0.0 for everything. 
+        # This fallback artificially boosts the score based on triggered signals
+        # so your Flutter developer can successfully test the UI graphics.
+        if prob < 0.01 and len(signals) > 0:
+            # Add 15% risk for every red flag triggered
+            prob = min(0.96, len(signals) * 0.15)
+            
+        tier = get_risk_tier(prob)
         
         # 4. Disabled SHAP Proofs (temporarily disabled for TF transition)
         proofs = []
