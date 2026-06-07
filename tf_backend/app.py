@@ -56,18 +56,18 @@ def predict_risk(request: PredictionRequest):
         # 1. Convert the incoming JSON dictionary from Flutter into a Pandas DataFrame (1 row)
         df = pd.DataFrame([request.features])
         
-        # Automatically fill in any missing base columns the Flutter app forgot to send
-        base_cols = ['F3799', 'F3800', 'F3796', 'F3797', 'F3922', 'F3890', 'F3895', 'F3894', 'F3891', 'F3919', 'F13', 'F14', 'F15', 'F16', 'F19', 'F25', 'F3856', 'F3859', 'F3882', 'F3883', 'F3905', 'F3900', 'F3920', 'F3923', 'F3915', 'F3912', 'F3901', 'F3902', 'F3889', 'F3886', 'F3893', 'F3887', 'F2796', 'F3877']
-        for col in base_cols:
+        # Automatically fill in any missing numerical columns with 0
+        num_cols = ['F3799', 'F3800', 'F3796', 'F3797', 'F3922', 'F3919', 'F13', 'F14', 'F15', 'F16', 'F19', 'F25', 'F3856', 'F3859', 'F3882', 'F3883', 'F3905', 'F3900', 'F3920', 'F3923', 'F3915', 'F3912', 'F3901', 'F3902', 'F3887', 'F2796', 'F3877']
+        for col in num_cols:
             if col not in df.columns:
                 df[col] = 0
                 
-        # Fix string-based defaults
-        if 'F3891' not in df.columns or pd.isna(df['F3891'].iloc[0]): df['F3891'] = 'others'
-        if 'F3890' not in df.columns or pd.isna(df['F3890'].iloc[0]): df['F3890'] = 'U'
-        if 'F3889' not in df.columns or pd.isna(df['F3889'].iloc[0]): df['F3889'] = 'G365D'
-        if 'F3886' not in df.columns or pd.isna(df['F3886'].iloc[0]): df['F3886'] = 'Savings'
-        if 'F3893' not in df.columns or pd.isna(df['F3893'].iloc[0]): df['F3893'] = 'RETAIL'
+        # Fix string-based categorical defaults
+        if 'F3891' not in df.columns or pd.isna(df.get('F3891', [None])[0]): df['F3891'] = 'others'
+        if 'F3890' not in df.columns or pd.isna(df.get('F3890', [None])[0]): df['F3890'] = 'U'
+        if 'F3889' not in df.columns or pd.isna(df.get('F3889', [None])[0]): df['F3889'] = 'G365D'
+        if 'F3886' not in df.columns or pd.isna(df.get('F3886', [None])[0]): df['F3886'] = 'Savings'
+        if 'F3893' not in df.columns or pd.isna(df.get('F3893', [None])[0]): df['F3893'] = 'RETAIL'
         
         # 2. Run your existing Feature Engineering pipeline
         features_df = engineer_features(df)
