@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-def create_tf_model(input_shape=(36,), learning_rate=0.001):
+def create_tf_model(input_shape=(55,), learning_rate=0.001):
     # This is our custom brain for catching mule accounts!
-    # It takes 36 distinct pieces of data (our engineered features)
+    # It takes 55 distinct pieces of data (our engineered features)
     model = tf.keras.Sequential([
         tf.keras.layers.Input(shape=input_shape),
         

@@ -30,13 +30,21 @@ MODEL_PATH = Path("results/final_model.keras")
 model = None
 
 try:
+    expected_features = len(get_feature_names())
+    
     if MODEL_PATH.exists():
         model = load_tf_model(str(MODEL_PATH))
-        print(f"Loaded TensorFlow model from {MODEL_PATH}")
+        # Ensure the model expects the correct number of engineered features
+        if model.input_shape[-1] != expected_features:
+            print(f"Warning: Model shape mismatch. Recreating baseline model for {expected_features} features.")
+            model = create_tf_model(input_shape=(expected_features,))
+            model.save(str(MODEL_PATH))
+        else:
+            print(f"Loaded TensorFlow model from {MODEL_PATH}")
     else:
         print("Warning: Model file not found. Generating an initial untrained model to prevent 503 errors.")
         os.makedirs("results", exist_ok=True)
-        model = create_tf_model()
+        model = create_tf_model(input_shape=(expected_features,))
         model.save(str(MODEL_PATH))
         print(f"Untrained baseline model saved to {MODEL_PATH}")
 except Exception as e:
