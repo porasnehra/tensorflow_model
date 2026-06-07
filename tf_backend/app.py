@@ -9,7 +9,8 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 
-from models.tf_model import load_tf_model
+import os
+from models.tf_model import load_tf_model, create_tf_model
 from utils.feature_engineering import engineer_features, get_feature_names
 from predict import get_risk_tier, explain_signals
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,9 +34,13 @@ try:
         model = load_tf_model(str(MODEL_PATH))
         print(f"Loaded TensorFlow model from {MODEL_PATH}")
     else:
-        print("Warning: Model file not found. Please train the TensorFlow model first.")
+        print("Warning: Model file not found. Generating an initial untrained model to prevent 503 errors.")
+        os.makedirs("results", exist_ok=True)
+        model = create_tf_model()
+        model.save(str(MODEL_PATH))
+        print(f"Untrained baseline model saved to {MODEL_PATH}")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    print(f"Error loading/creating model: {e}")
 
 class PredictionRequest(BaseModel):
     # This accepts the raw JSON data sent by your Flutter app
